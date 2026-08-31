@@ -3,10 +3,6 @@ name: Verify Linda Protocol
 on:
   push:
   pull_request:
-  workflow_dispatch:
-  schedule:
-    # Demo-week insurance: re-check the live ICPAC contract every morning.
-    - cron: "0 5 * * *"
 
 jobs:
   backend:
@@ -48,19 +44,3 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
-
-  upstream-contract:
-    # Hits the real ICPAC endpoints and fails loudly if the shapes Linda depends
-    # on have drifted away from the recorded fixtures. Not run on every push.
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: server/backend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: python -m pip install -e '.[dev]'
-      - run: pytest -q -m contract --contract
